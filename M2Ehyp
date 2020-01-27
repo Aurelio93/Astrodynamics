@@ -1,0 +1,33 @@
+function E = M2Ehyp( e ,M )
+
+% Function to compute the eccentric anomaly from the mean anomaly for
+% hyperbolic orbit
+% 
+% INPUT
+% e = Eccentricity
+% M = Mean anomaly
+% 
+% OUTPUT:
+% E = Eccentric anomaly
+% 
+% Newton-Raphson
+% x1 = x0 - f(x)/f'(x)
+%
+% f(E)= -E + e*sinh(E) - M
+% f'(E)= -1 + e*cosh(E)
+
+% E= E0 - (-E0 + e*sinh(E0) - M)/(-1 + e*cosh(E0))
+% E= E0 + (M + E0 - e*sinh(E0))/(-1 + e*cosh(E0))
+
+%%
+E0= M;
+
+for i=1:1000
+    E= E0 + (M + E0 - e*sinh(E0))/(-1 + e*cosh(E0));
+    diff= abs(E-E0);
+    if diff < 1e-6
+       break
+    else
+     E0=E;
+    end
+end
