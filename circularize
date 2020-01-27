@@ -1,5 +1,4 @@
-% Function that given the state vector at any instant of an 
-% hyperbola/elliptic orbit, computes the necessary DeltaV required to 
+% Function that given the state vector at any instant of an hyperbola/elliptic orbit, computes the necessary DeltaV required to 
 % circularize at r=rf.
 % 
 % INPUT
