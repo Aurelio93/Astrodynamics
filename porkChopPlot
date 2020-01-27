@@ -1,0 +1,54 @@
+clear
+close all
+
+inputData
+
+day = 24*3600;
+departureInitial = 9290*day; % 8/06/2025 after J2000.0  
+departure = departureInitial:day/12:departureInitial+30*day;
+TOF = 3*day:day/12:7*day;
+
+%departure position
+theta = 0*pi/180;
+rdeparture = 66170.01*[cos(theta);sin(theta);1e-4];
+vdeparture = sqrt(mu/norm(rdeparture))*[-sin(theta);cos(theta); 0];
+
+n = length(departure);
+m = length(TOF);
+deltaV1(n, m) = 0;
+deltaV2(n, m) = 0;
+
+for i = 1:n
+    for j = 1:m
+        [OE] = moonOrbitalElements(departure(i)+TOF(j));
+        [ rarrival, varrival ] = kepToStateVector(OE, mu);
+        [v1, v2] = lambertProblem(rdeparture, rarrival, TOF(j), mu);
+        deltaV1(i, j) = norm(vdeparture-v1); 
+        deltaV2(i, j) = norm(varrival-v2); 
+    end
+end
+%%
+figure
+hold on
+labels1 = linspace(min(min(deltaV1)), max(max(deltaV1)), 15);
+labels2 = logspace(log10(min(min(deltaV2))), log10(max(max(deltaV2))), 15);
+% round to the nearest decimal
+labels1 = round(100*labels1)/100;
+labels2 = round(100*labels2)/100;
+contour((departure-departureInitial)/day, TOF/day, deltaV1', labels1, 'ShowText', 'on', 'linestyle','--', 'LineColor', 'r');
+contour((departure-departureInitial)/day, TOF/day, deltaV2', labels2, 'ShowText', 'on', 'linestyle','--', 'LineColor', 'b');
+legend('\Deltav_1 (km/s)','\Deltav_2 (km/s)')
+xlabel('Departure [days after 8/06/2025]');
+ylabel('Time of Flight [days]');
+title('Pork Chop Plot');
+saveas(gcf,['PCP', num2str(theta*180/pi), 'deltaV.png'])
+
+figure
+labels3 = linspace(min(min(deltaV1+deltaV2)), max(max(deltaV1+deltaV2)), 30);
+% round to the nearest decimal
+labels3 = round(100*labels3)/100;
+contour((departure-departureInitial)/day, TOF/day, deltaV1'+deltaV2', labels1, 'ShowText', 'on');
+xlabel('Departure [days after 8/06/2025]');
+ylabel('Time of Flight [days]');
+title('Pork Chop Plot');
+saveas(gcf,['PCP', num2str(theta*180/pi), 'totalDeltaV.png'])
