@@ -1,0 +1,47 @@
+function [DeltaV] = poweredGravityAssist(r0, v0, r1, v1, rp, mu) 
+
+% Function that computes the deltaV to patch the incoming hyperbola
+% (defined by r0,v0) with the outgoing hyperbola (defined by r1,v1),
+% through the periapsis distance rp. The deltaV is done at the distance rp.
+% 
+% INPUT
+% r0 = Incoming position vector (planetocentric reference frame) [km]
+% v0 = Incoming velocity vector (planetocentric referance frame) [km/s]
+% r1 = Outgoing position vector (planetocentric reference frame) [km]
+% v1 = Outgoing velocity vector (planetocentric referance frame) [km/s]
+% rp = Distance of the periapsis of the hyperbola [km]
+% mu = Standard gravitational parameter [km^3/s^2]
+%
+% OUTPUT
+% DeltaV = Delta V to patch the two hyperbolas [km/s]
+
+%%
+
+% Normalizing the input
+% r0 = normalizingUnits(r0, 2);
+% v0 = normalizingUnits(v0, 3);
+% r1 = normalizingUnits(r1, 2);
+% v1 = normalizingUnits(v1, 3);
+% rp = normalizingUnits(rp, 2);
+% mu = normalizingUnits(mu, 4);
+
+% Orbital Elements @ state vector instant
+[OE0] = stateVectorToKep(r0, v0, mu);
+a0 = OE0.a;  % Incoming hyperbola semi-major axis
+
+[OE1] = stateVectorToKep(r1, v1, mu);
+a1 = OE1.a;  % Outgoing hyperbola semi-major axis
+
+% Hyperbolic excess velocity
+v0_inf = sqrt(mu/abs(a0));  % Incoming
+v1_inf = sqrt(mu/abs(a1));  % Outgoing   
+
+% Velocity at periapsis
+v0_p=sqrt(v0_inf^2 +2*mu/rp);  % Incoming
+v1_p=sqrt(v1_inf^2 +2*mu/rp);  % Outgoing
+
+% DeltaV
+DeltaV = abs(v0_p-v1_p);
+
+% Denormalizing the output
+% DeltaV = denormalizingUnits(DeltaV, 3);
