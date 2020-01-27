@@ -1,0 +1,73 @@
+function [ r, v ] = kepToStateVector(OE, mu)
+
+% Compute the position and velocity vector of a planet in an intertial
+% coordinate frame (ICF) with the focus where the atractor is as the origin
+% of the reference frame from its orbital elements in the same ICF (NOT FOR
+% PARABOLIC)
+%
+% Input:
+% -OE.a: semimajor axis of the orbit
+% -OE.e: eccentricity of the orbit
+% -OE.M: mean anomaly of the instant (rad)
+% -OE.in: inclination of the orbit (rad)
+% -OE.w: argument of the perigee (rad)
+% -OE.omega: ascendent node of the orbit (rad)
+% -mu: gravitational parameter of the central planet 
+% Output:
+% -r: position vector in the ICF
+% -v: velocity vector in the ICF
+%
+% NOTE: When OE.in=0 ----> assumption: Node coincides with x-axis
+%       When OE.e=0 -----> assumption: OE.w = 0
+a = OE.a;
+e = OE.e;
+M = OE.M;
+in = OE.in;
+w = OE.w;
+omega = OE.omega;
+
+
+
+% Solve the Kepler's equation for elliptic orbits
+if a>0 
+   E = M2Eell( e ,M );
+   % Computation of the true anomaly
+   theta = atan2((sqrt(1-e^2)*sin(E))/(1-e*cos(E)),...
+              (e-cos(E))/(e*cos(E)-1)); % eq (5&6)
+elseif a<0
+   F = M2Ehyp( e ,M );
+   % Computation of the true anomaly
+   theta=2*atan(sqrt((e+1)/(e-1))*tan(F/2));
+end
+
+% Position in P, Q, W coodinates (eq 7)
+p = a*(1-e^2); % semilatum rectum of the orbit
+rorbit(1,1) = p/(1+e*cos(theta))*cos(theta);
+rorbit(2,1) = p/(1+e*cos(theta))*sin(theta);
+rorbit(3,1) = 0;
+
+% Velocity in P, Q, W  coordinates (eq 8)
+vorbit(1,1) = -sqrt(mu/p)*sin(theta);
+vorbit(2,1) = sqrt(mu/p)*(e+cos(theta));
+vorbit(3,1) = 0;
+
+% Computation of the rotation matrices
+R1 = [cos(w)   -sin(w)   0; ...
+     sin(w)    cos(w)   0; ...
+      0             0    1;  ]; % eq 9
+  
+R2 = [1    0           0   ; ...
+     0  cos(in)   -sin(in); ...
+     0  sin(in)    cos(in)]; % eq 10
+  
+R3 = [cos(omega)   -sin(omega)   0; ...
+     sin(omega)    cos(omega)   0; ...
+      0             0            1  ]; % eq 11
+  
+rotation = R3*(R2*R1);
+
+% computation of the output vectors
+r = rotation*rorbit; % eq 12
+v = rotation*vorbit; % eq 13
+
+end
