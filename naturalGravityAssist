@@ -1,0 +1,59 @@
+function [rp, r1, v1, TOF] = naturalGravityAssist(r0, v0, mu)
+
+% Function that given an incoming state vector, computes the periapsis and 
+% the outgoing state vector of a negligible mass performing a natural 
+% gravity assist around a body with standard gravitational parameter equal 
+% to mu. The outgoing vector is evaluated at the instant where the norm of
+% the outgoing position is equal to the norm of the incoming position.
+% 
+% INPUT
+% r0 = Incoming position vector (planetocentric reference frame) [km]
+% v0 = Incoming velocity vector (planetocentric referance frame) [km/s]
+% mu = Standard gravitational parameter [km^3/s^2]
+% 
+% OUTPUT
+% rp = Position vector of the periapsis of the hyperbola [km]
+% r1 = Outgoing position vector (planetocentric reference frame) [km]
+% v1 = Outgoing velocity vector (planetocentric referance frame) [km/s]
+% TOF = time of flight taken to go from the incoming position to the
+% outgoing position [s]
+
+%%
+
+% Normalizing the input
+% r0 = normalizingUnits(r0, 2);
+% v0 = normalizingUnits(v0, 3);
+% mu = normalizingUnits(mu, 4);
+
+% Orbital Elements @ incoming state vector instant
+[OE0] = stateVectorToKep(r0, v0, mu);
+a = OE0.a;
+e = OE0.e;
+M = OE0.M;
+i = OE0.in;
+omega = OE0.omega;
+w = OE0.w;
+
+% Perigee
+p = a*(1-e^2);  % Semilatum rectum
+rp=p/(1+e);
+
+% Orbital Elements @ outgoing state vector instant
+OE1.a = a;
+OE1.e = e;
+OE1.M = -M;
+OE1.in = i;
+OE1.omega = omega;
+OE1.w = w;
+
+% Outgoing
+[r1, v1] = kepToStateVector(OE1, mu);
+
+% Time of flight
+n = sqrt(mu/abs(a^3));
+TOF = abs(OE1.M-OE0.M)/n;
+
+% Denormalizing the output
+% r1 = denormalizingUnits(r1, 2);
+% v1 = denormalizingUnits(v1, 3);
+% rp = denormalizingUnits(rp, 2);
