@@ -1,0 +1,32 @@
+% Function that given the state vector at any instant of an 
+% hyperbola/elliptic orbit, computes the necessary DeltaV required to 
+% circularize at r=rf.
+% 
+% INPUT
+% r0 = Initial position vector (planetocentric reference frame) [km]
+% v0 = Initial velocity vector (planetocentric referance frame) [km/s]
+% rf = Radius of the final circular orbit [km]
+% mu = Standard gravitational parameter [km^3/s^2]
+% 
+% OUTPUT
+% DeltaV = Delta V to circularize the orbit [km/s]
+
+%%
+
+% Normalizing the input
+% r0 = normalizingUnits(r0, 2);
+% v0 = normalizingUnits(v0, 3);
+% rf = normalizingUnits(rf, 2);
+% mu = normalizingUnits(mu, 4);
+
+% Orbital Elements @ state vector instant
+[OE] = stateVectorToKep(r0, v0, mu);
+a = OE.a; %  Semi-major axis
+
+% DeltaV
+v_circ = sqrt(mu/rf);  % circular velocity at rf 
+v_rf = sqrt(2*(mu/rf - mu/(2*a)));  % hyperbolic/elliptic velocity at rf
+DeltaV = abs(v_rf-v_circ); 
+
+% Denormalizing the output
+% DeltaV = denormalizingUnits(DeltaV, 3);
