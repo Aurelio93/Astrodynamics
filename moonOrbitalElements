@@ -1,0 +1,55 @@
+function [OE] = moonOrbitalElements(t)
+% function that returns the moon orbital elements at a given instant of
+% time (seconds since J2000.0)
+% Source:
+% Numerical expressions for precession formulae and mean elements for the
+% Moon and the planets (Simon, J.L et at.)
+% http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?bibcode=1994A%26A...282..663S&db_key=AST&page_ind=6&plate_select=NO&data_type=GIF&type=SCREEN_GIF&classic=YES
+
+T = (t/(3600*24))/36525;
+
+%secular variations
+OE.a = 383397.7916 + 0.0038*T;
+OE.e = 0.055545525 - 0.000000016*T;
+OE.in = 5.1568983 + (-0.00008*T + 0.02966*T^2 - 0.000042*T^3 - 0.00000013*T^4)/3600;
+p = 83.3532499 + (14643420.2632*T - 38.2776*T^2 - 0.045047*T^3 + 0.00021301*T^4)/3600;
+L = 218.31665436 + (1732559343.73604*T - 5.8883*T^2 + 0.006604*T^3 + 0.00003169*T^4)/3600;
+OE.omega = 125.04455504 + (-6967919.3622*T + 6.3622*T^2 + 0.007625*T^3 - 0.00003586*T^4)/3600;
+      
+% periodic variations
+
+%Delaunay arguments
+
+D = 297.85020420 + (1602961601.4603*T - 5.8679*T^2 + 0.006609*T^3 + 0.00003169*T^4)/3600;
+F = 93.27209932 + (1739527263.0983*T - 12.2505*T^2 - 0.001021*T^3 + 0.00000417*T^4)/3600;
+l = 134.96341138 + (1717915923.4728*T + 32.3893*T^2 + 0.05165*T^3 - 0.0002447*T^4)/3600;
+lp = 357.52910918 + (129596581.048*T - 0.5532*T^2 + 0.000136*T^3 - 0.00001149*T^4)/3600;
+% psi = 310.17137918 + (-6967051.4360*T + 6.2068*T^2 + 0.007618*T^3 - 0.00003219*T^4)/3600;
+
+D = D*pi/180;
+F = F*pi/180;
+l = l*pi/180;
+lp = lp*pi/180;
+% psi = psi*pi/180;
+
+OE.a = OE.a + 3400.4*cos(2*D) - 635.6*cos(2*D-l) - 235.6*cos(l) + 218.1*cos(2*D-lp) + 181.0*cos(2*D+l);
+OE.in = OE.in + (486.26*cos(2*D-2*F) - 40.13*cos(2*D) + 37.51*cos(2*F) + 25.73*cos(2*l-2*F) + 19.97*cos(2*D-lp-2*F))/3600;
+OE.omega = OE.omega - (5392*sin(2*D-2*F)+540*sin(lp)+441*sin(2*D)-423*sin(2*F)+288*sin(2*l-2*F))/3600;
+OE.e = OE.e +  0.014216*cos(2*D-l) + 0.008551*cos(2*D-2*l) - 0.001383*cos(l) + 0.001356*cos(2*D+l) - 0.001147*cos(4*D-3*l)...
+-0.000914*cos(4*D-2*l) + 0.000869*cos(2*D-lp-l) - 0.000627*cos(2*D) -0.000394*cos(4*D-4*l) +0.000282*cos(2*D-lp-2*l)...
+-0.000279*cos(D-l) - 0.000236*cos(2*l) + 0.000231*cos(4*D) + 0.000229*cos(6*D-4*l) - 0.000201*cos(2*l-2*F);
+p = p + (-55609*sin(2*D-l)-34711*sin(2*D-2*l)-9792*sin(l)+9385*sin(4D-3*l)+7505*sin(4*D-2*l)+5318*sin(2*D+l)+3484*sin(4*D-4*l)...
+    -3417*sin(2*D-lp-l)-2530*sin(6*D-4*l)-2376*sin(2*D)-2075*sin(2*D-3*l)-1883*sin(2*l)-1736*sin(6*D-5*l)+1626*sin(lp)-1370*sin(6*D-3*l)...
+    )/3600;
+L = L + (-3332.9*sin(2*D)+1197.4*sin(2*D-l)-662.5*sin(lp)+396.3*sin(l)-218.0*sin(2*D-lp))/3600;
+
+% kireini naru koto desu    
+OE.in = mod(OE.in*(pi/180), 2*pi);
+OE.omega = OE.omega *(pi/180);
+p = p*(pi/180);
+L = L*(pi/180);
+OE.M = mod(L - p, 2*pi);
+OE.w = mod(p - OE.omega, 2*pi) ;
+OE.omega = mod(OE.omega, 2*pi);
+
+end
