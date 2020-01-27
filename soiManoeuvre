@@ -36,7 +36,7 @@ e = @(dv) norm(ecc(dv));  % Norm of eccentricity
 a = @(dv) -mu/((norm(vsoi+[dv*cos(dv_ang) dv*sin(dv_ang) 0]))^2);  % Semi-major axis
 hastobzero = @(dv) a(dv)*(1-e(dv))-rp;
 DV = fzero(hastobzero,1,options);
- end
+end
 
 % Denormalizing the output
 % DV = denormalizingUnits(DV, 3);
