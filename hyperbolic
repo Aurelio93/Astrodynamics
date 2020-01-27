@@ -1,0 +1,38 @@
+function [DeltaV,vinf] = hyperbolic(r0, a, mu)
+
+% Function that given the radius of a circular orbit finds the DeltaV in order to reach an hyperbolic
+% orbit of semi-major axis a. It returns also the Hyperbolic Excess Velocity.
+% 
+% INPUT
+% r0 = Radius of the initial circular orbit [km]
+% a = Semi-Major axis of the hyperbola
+% mu = Standard gravitational parameter [km^3/s^2]
+% 
+% OUTPUT
+% DeltaV = Delta V to circularize the orbit [km/s]
+% vinf = Hyperbolic Excess velocity [km/s]
+%
+% REFERENCES:
+%   [1]: David de la Torre, "T1-Orbital Mechanics I"
+%%
+
+% Normalizing the input
+% r0 = normalizingUnits(r0, 2);
+% a = normalizingUnits(a, 2);
+% mu = normalizingUnits(mu, 4);
+
+v0 = sqrt(mu/r0);  % circular velocity at r0 from energy equation [1], pag 7
+v = sqrt(2*((mu/r0)+...
+    mu/(2*norm(a))));  % hyperbolic velocity at r0 from energy equation [1], pag 7
+
+% DeltaV [km/s]
+DeltaV = abs(v-v0); 
+
+% Hyberbolic Excess Velocity [km/s]
+vinf = sqrt(2*mu/(2*norm(a)));  % Energy equation [1], pag 7
+
+
+
+% Denormalizing the output
+% DeltaV = denormalizingUnits(DeltaV, 3);
+% vinf = denormalizingUnits(vinf,3);
