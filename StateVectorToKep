@@ -1,0 +1,111 @@
+function [OE] = stateVectorToKep(R,V,mu)
+% This function computes the orbital elements of the orbit using the
+% position vector, the velocity vector and the gravitational standard
+% parameter. 
+%
+% The angles are returned in radians.
+%
+% Inputs:
+%   R: Position vector at a given time.
+%   V: Velocity vector at a given time.
+%   mu: Gravitational Standard Parameter.
+%
+% Outputs:
+%   OE.a: semimajor axis of the orbit
+%   OE.e: eccentricity of the orbit
+%   OE.M: mean anomaly of the instant position(rad)
+%   OE.in: inclination of the orbit (rad)
+%   OE.w: argument of the perigee (rad)
+%   OE.omega: ascendent node of the orbit (rad)
+%
+%
+% NOTE: When OE.in=0 ----> assumption: Node coincides with x-axis
+%       When OE.e=0 -----> assumption: OE.w = 0
+%
+% References:
+%   [1]: Vallado, D., Fundamentals of astrodynamics and applications.
+%   (1997).
+%
+
+
+% Norm of the position vector and the velocity vector.
+r=norm(R);
+v=norm(V);
+
+K=[0 0 1]; % Unit vector in the Z direction.
+
+% Specific angular momentum. [1], pg. 144
+H(1)=R(2)*V(3)-R(3)*V(2);
+H(2)=-R(1)*V(3)+R(3)*V(1);
+H(3)=R(1)*V(2)-R(2)*V(1);
+
+h=norm(H); % Magnitude of the specific angular momentum.
+
+% Inclination of the orbit.
+i=acos(H(3)/h); % [1], pg. 133, Eq. 2-45.
+
+% Zero-inclination orbits
+if i == 0
+    N = [1 0 0];
+else
+    % Node vector [1], pg. 133, Eq. 2-46.
+    N(1)=K(2)*H(3)-K(3)*H(2);
+    N(2)=-K(1)*H(3)+K(3)*H(1);
+    N(3)=K(1)*H(2)-K(2)*H(1);
+end
+
+n=norm(N); % Magnitude of the node vector. 
+
+% Eccentricity Vector [1], pg. 132, Eq. 2-42.
+E=(1/mu)*((v^2-mu/r)*R-dot(R,V)*V);
+
+e=norm(E); % Magnitude of the Eccentricity. 
+
+xi=v^2/2-mu/r; % Specific energy. [1], pg. 145
+
+if(e~=1) % Circular, hyperbollic or elliptic orbit.
+    a=-mu/(2*xi); % Semi-major axis. [1], pg. 145
+else % Parabola
+    a=inf; % Semi-major axis [1], pg. 145
+end
+
+% Longitude of the ascending node
+omega=acos(N(1)/n); % [1], pg. 133, Eq. 2-47.
+
+if(N(2)<0) % Checking if the O value is between 0 and 180 degrees.
+    omega=(2*pi)-omega; % If it is not, we must change it.
+end
+
+% Argument of the periapsis. 
+
+if e == 0  % Zero-eccentricity orbit
+    w = 0;
+else
+    w=acos(dot(N,E)/(n*e)); % [1], pg. 134, Eq. 2-48.
+    if(E(3)<0) % Checking if the w value is between 0 and 180 degrees
+   w=(2*pi)-w; 
+    end
+end
+
+nu=acos(dot(R,E)/(e*r));
+
+if(dot(R,V)<0)
+    nu=(2*pi)-nu;
+end
+
+if a>0 
+    E=2*atan(sqrt((1-e)/(1+e))*tan(nu/2));
+    M= E-e*sin(E);
+elseif a<0
+    F=2*atan(sqrt((e-1)/(e+1))*tan(nu/2));
+    M=e*sinh(F)-F;
+elseif a==inf
+    M=(1/2)*tan(nu/2)+1/6*(tan(nu/2))^3;
+end
+
+OE.a=a;
+OE.e=e;
+OE.M=M;
+OE.in=i;
+OE.omega=omega;
+OE.w=w;
