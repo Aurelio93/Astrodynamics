@@ -1,0 +1,32 @@
+% Computation of DeltaV manoeuvres in order to reach the moon's Soi with an
+% hyperbolic orbit considering different circular parking orbit.
+
+clc
+clear 
+close all
+
+%% Costants
+mu = 4902.77;  % Standard gravitational parameter of the Moon [km^3/s^2]
+rL = 1737;  % Moon's radius [km]
+h0 = linspace(100,2000,500);  % Circular orbit altitudes [km]
+r0 = rL+h0;  % Periselenium distances [km]
+a = linspace(2000,40000,500);  % Semi-major axis of the hyperbolic orbit [km]
+
+%% Loop for the Delta V
+DeltaV = zeros(length(h0),length(a));
+vinf = zeros(length(h0),length(a));
+for i= 1:length(h0)
+    for j = 1:length(a)
+        [DeltaV(i,j),~] = hyperbolic(r0(i), a(j), mu);
+    end
+end
+
+%% Plot
+
+% DeltaV
+figure('Position',[400,200,600,400],'PaperPositionMode','auto')
+imagesc(a,r0,DeltaV);
+colorbar;
+title('\Deltav [km/s]','fontweight','bold','fontsize',16);
+ylabel('r_0 [km]','fontweight','bold','fontsize',10);
+xlabel('a [km]','fontweight','bold','fontsize',10);
