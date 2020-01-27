@@ -1,0 +1,26 @@
+function [v0, v1] = lambertProblem(r0, r1, TOF, mu)
+% compute the initial and final velocity of an orbit that has an initial 
+% position vector of (r0) and a final state vector of (r1) anf it takes TOF
+% seconds to travel from the initial to the final condition.
+
+z = [0, 0, 1]; % positive rotation
+
+%    [v0,v1,exitflag] = LambertProblemBate(r0, r1, TOF, mu,0,40);
+%    if(dot(z, cross(r0, v0)) < 0)
+%       [v0,v1,exitflag] = LambertProblemBate(r0, r1, TOF, mu,1,40);
+%    end
+%    if(exitflag ~= 1)
+      [v0, v1, ~, exitflag] = robustLambert(r0', r1', TOF/(24*3600), 0, mu);
+      if(dot(z, cross(r0, v0)) < 0)
+          [v0, v1, ~, exitflag] = robustLambert(r0', r1', -TOF/(24*3600), 0, mu);
+      end
+      if(exitflag ~= 1)
+          error('Lambert problem has failed')
+      end
+%    end
+
+
+v0 = v0';
+v1 = v1';
+
+end
