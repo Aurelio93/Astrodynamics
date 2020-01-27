@@ -1,0 +1,42 @@
+function [DV] = soiManoeuvre(rsoi, vsoi, rp, mu, alpha)
+ 
+% Function that given the state vector at the intersection with the Sphere
+% Of Influence, computes the DeltaV inclined of angle alpha
+% in order to achieve the periapsis altitude rp. 2D analysys
+%
+% INPUT
+% rsoi = Position vector at intersection (planetocentric reference frame) [km]
+% vsoi = Velocity vector at intersection (planetocentric referance frame) [km/s]
+% rp = Desired periapsis altitude [km]
+% mu = Standard gravitational parameter [km^3/s^2]
+% 
+% OUTPUT
+% DV = DeltaV [km/s]
+
+%% 
+
+
+% Normalizing the input
+% rsoi = normalizingUnits(rsoi, 2);
+% vsoi = normalizingUnits(vsoi, 3);
+% mu = normalizingUnits(mu, 4);
+% rp = normalizingUnits(rp, 2);
+
+% Auxiliary values
+r0 = norm(rsoi);  
+vsoi_ang = atan2(vsoi(2),vsoi(1));  % Angle of the direction of the velocity [rad]
+dv_ang = vsoi_ang+alpha;
+
+% Solution to get the range of perigee altitudes
+options=optimset('display','none');
+ecc = @(dv) (1/mu)*(((norm(vsoi+[dv*cos(dv_ang) dv*sin(dv_ang) 0]))^2-mu/r0)...
+    *rsoi-dot(rsoi,vsoi+[dv*cos(dv_ang) dv*sin(dv_ang) 0])*...
+    (vsoi+[dv*cos(dv_ang) dv*sin(dv_ang) 0]));  % Eccentricity
+e = @(dv) norm(ecc(dv));  % Norm of eccentricity
+a = @(dv) -mu/((norm(vsoi+[dv*cos(dv_ang) dv*sin(dv_ang) 0]))^2);  % Semi-major axis
+hastobzero = @(dv) a(dv)*(1-e(dv))-rp;
+DV = fzero(hastobzero,1,options);
+ end
+
+% Denormalizing the output
+% DV = denormalizingUnits(DV, 3);
