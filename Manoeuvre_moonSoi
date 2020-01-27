@@ -1,0 +1,32 @@
+% Computation of DeltaV manoeuvres in order to get several different
+% periselenium altitudes. 2D analysis
+
+
+clc
+clear 
+close all
+
+%% Costants
+mu = 4902.77;  % Standard gravitational parameter of the Moon [km^3/s^2]
+rL = 1737;  % Moon's radius [km]
+hp = linspace(100,2000,50);  % Periselenium altitudes [km]
+rp = rL+hp;  % Periselenium distances [km]
+rsoi = [66170.01 0 0];  % Position vector at the intersection with Moon's Soi [km]
+vsoi = [-1 -0.2 0];  % Velocity vector at the intersection with Moon's Soi [km/s]
+alpha = linspace(-pi/20,pi/20,50);  % Direction of delta V wrt to vsoi [rad]
+
+%% Loop for the Delta V
+Dv = zeros(length(hp),length(alpha));
+for i= 1:length(rp)
+    for j = 1:length(alpha)
+        [Dv(i,j)] = soiManoeuvre(rsoi, vsoi, rp(i), mu,alpha(j));
+    end
+end
+
+%% Plot
+figure('Position',[400,200,600,400],'PaperPositionMode','auto')
+imagesc(alpha*180/pi,rp,Dv);
+colorbar;
+title('\Deltav [km/s]','fontweight','bold','fontsize',16);
+ylabel('r_p [km]','fontweight','bold','fontsize',10);
+xlabel('Thrust angle [°]','fontweight','bold','fontsize',10);
