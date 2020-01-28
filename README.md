@@ -1,3 +1,3 @@
 # Astrodynamics
-Space codes I've written within my carrer
-Matlab, Python or C++.
+Pure astrodynamics, from simple kepler equation to solutions of Lambert Problem
+Only Matlab used for this
